@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from decimal import Decimal
 from django.db import transaction
-from .models import LedgerAccount, Transaction, JournalEntry
+from .models import LedgerAccount, Transaction, JournalEntry, FinancialGoal, Contact
 
 class LedgerAccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -70,3 +70,15 @@ class AccountStatementEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = JournalEntry
         fields = ['id', 'amount', 'type', 'transaction_description', 'transaction_reference', 'transaction_date']
+
+class FinancialGoalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FinancialGoal
+        fields = ['id', 'name', 'target_amount', 'saved_amount', 'deadline', 'created_at']
+        read_only_fields = ['saved_amount', 'created_at']
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = ['id', 'name', 'email', 'avatar', 'created_at']
+        read_only_fields = ['created_at']

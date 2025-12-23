@@ -98,6 +98,33 @@ class JournalEntry(models.Model):
 
 class IdempotencyKey(models.Model):
     key = models.UUIDField(unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class FinancialGoal(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='financial_goals')
+    name = models.CharField(max_length=255)
+    target_amount = models.DecimalField(max_digits=20, decimal_places=4)
+    saved_amount = models.DecimalField(max_digits=20, decimal_places=4, default=Decimal('0.0000'))
+    deadline = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.saved_amount}/{self.target_amount})"
+
+class Contact(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='contacts')
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    avatar = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'email')
+
+    def __str__(self):
+        return self.name
     response_body = models.JSONField()
     response_status = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
