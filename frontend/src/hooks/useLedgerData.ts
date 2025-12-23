@@ -65,7 +65,7 @@ export function useLedgerData(): LedgerData {
 
     const fetchSpendingStats = async (period: string) => {
         try {
-            const response = await api.get(`/ledger/analytics/spending/?period=${period}`);
+            const response = await api.get(`/api/ledger/analytics/spending/?period=${period}`);
             setSpendingStats(response.data);
         } catch (error) {
             console.error("Failed to fetch spending stats", error);
@@ -77,10 +77,10 @@ export function useLedgerData(): LedgerData {
             try {
                 setLoading(true);
                 const [balRes, txRes, accRes, goalRes] = await Promise.allSettled([
-                    api.get('/ledger/trial-balance/'),
-                    api.get('/ledger/transactions/'),
-                    api.get('/ledger/accounts/'),
-                    api.get('/ledger/goals/')
+                    api.get('/api/ledger/trial-balance/'),
+                    api.get('/api/ledger/transactions/'),
+                    api.get('/api/ledger/accounts/'),
+                    api.get('/api/ledger/goals/')
                 ]);
 
                 if (balRes.status === 'fulfilled') {

@@ -8,8 +8,8 @@ export function TopNav() {
     const pathname = usePathname();
     const links = [
         { name: 'Dashboard', href: '/' },
-        { name: 'Wallet', href: '/wallet' },
-        { name: 'Statistic', href: '/statistic' },
+        { name: 'Cards', href: '/cards' },
+        { name: 'Subscriptions', href: '/subscriptions' },
         { name: 'Transactions', href: '/transactions' },
     ];
 
@@ -32,8 +32,8 @@ export function TopNav() {
                                 key={link.name}
                                 href={link.href}
                                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isActive
-                                        ? 'bg-zinc-800 text-white shadow-lg'
-                                        : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                                    ? 'bg-zinc-800 text-white shadow-lg'
+                                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
                                     }`}
                             >
                                 {link.name}
