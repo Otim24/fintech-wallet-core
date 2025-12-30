@@ -7,3 +7,4 @@ python-decouple
 gunicorn
 uvicorn
 drf-spectacular
+django-cors-headers

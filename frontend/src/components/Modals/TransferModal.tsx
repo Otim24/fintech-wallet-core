@@ -90,7 +90,7 @@ export function TransferModal({ children, accounts, onSuccess, mode = 'send' }: 
                 });
             }
 
-            await api.post("/ledger/transactions/create/", {
+            await api.post("/api/ledger/transactions/create/", {
                 description: description || `${isRequest ? 'Request from' : 'Transfer to'} ${recipient}`,
                 entries: entries
             });

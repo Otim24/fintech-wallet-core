@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from decimal import Decimal
 from django.db import transaction
-from .models import LedgerAccount, Transaction, JournalEntry, FinancialGoal, Contact
+from .models import LedgerAccount, Transaction, JournalEntry, FinancialGoal, Contact, Card, Subscription
 
 class LedgerAccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -74,11 +74,23 @@ class AccountStatementEntrySerializer(serializers.ModelSerializer):
 class FinancialGoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = FinancialGoal
-        fields = ['id', 'name', 'target_amount', 'saved_amount', 'deadline', 'created_at']
-        read_only_fields = ['saved_amount', 'created_at']
+        fields = ['id', 'name', 'target_amount', 'current_amount', 'deadline', 'created_at']
+        read_only_fields = ['current_amount', 'created_at']
 
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
-        fields = ['id', 'name', 'email', 'avatar', 'created_at']
+        fields = ['id', 'name', 'email', 'avatar_url', 'created_at']
         read_only_fields = ['created_at']
+
+class CardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = ['id', 'user', 'account', 'name', 'last_4', 'type', 'is_frozen', 'spending_limit', 'balance', 'created_at']
+        read_only_fields = ['balance', 'created_at', 'user', 'account', 'name', 'last_4']
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ['id', 'user', 'service_name', 'amount', 'billing_cycle', 'next_billing_date', 'logo_url', 'is_active', 'created_at']
+        read_only_fields = ['created_at', 'user']

@@ -5,10 +5,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://127.0.0.1:8000/api/:path*', // Proxy to Django
+        destination: 'http://127.0.0.1:8000/api/:path*',
       },
-      // Also proxy Swagger UI and Schema if needed, but they are under /api/ in my urls.py so it's covered.
-      // Wait, Swagger is at /api/schema/. Covered.
     ];
   },
 };

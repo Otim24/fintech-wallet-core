@@ -98,26 +98,65 @@ class JournalEntry(models.Model):
 
 class IdempotencyKey(models.Model):
     key = models.UUIDField(unique=True, db_index=True)
+    response_body = models.JSONField()
+    response_status = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return str(self.key)
+
+
+
+class Card(models.Model):
+    class CardType(models.TextChoices):
+        PHYSICAL = 'PHYSICAL', 'Physical'
+        VIRTUAL = 'VIRTUAL', 'Virtual'
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cards')
+    account = models.ForeignKey(LedgerAccount, on_delete=models.CASCADE, related_name='cards')
+    name = models.CharField(max_length=50) # e.g. "Wise", "Stripe"
+    last_4 = models.CharField(max_length=4)
+    type = models.CharField(choices=CardType.choices, max_length=10)
+    is_frozen = models.BooleanField(default=False)
+    spending_limit = models.DecimalField(max_digits=12, decimal_places=2, default=1000.00)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.last_4})"
+
+class Subscription(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='subscriptions')
+    service_name = models.CharField(max_length=100)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    billing_cycle = models.CharField(max_length=20, default='Monthly')
+    next_billing_date = models.DateField()
+    logo_url = models.URLField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.service_name
 class FinancialGoal(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='financial_goals')
     name = models.CharField(max_length=255)
     target_amount = models.DecimalField(max_digits=20, decimal_places=4)
-    saved_amount = models.DecimalField(max_digits=20, decimal_places=4, default=Decimal('0.0000'))
+    current_amount = models.DecimalField(max_digits=20, decimal_places=4, default=Decimal('0.0000'))
     deadline = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name} ({self.saved_amount}/{self.target_amount})"
+        return f"{self.name} ({self.current_amount}/{self.target_amount})"
 
 class Contact(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='contacts')
     name = models.CharField(max_length=255)
     email = models.EmailField()
-    avatar = models.URLField(blank=True, null=True)
+    avatar_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -125,9 +164,3 @@ class Contact(models.Model):
 
     def __str__(self):
         return self.name
-    response_body = models.JSONField()
-    response_status = models.IntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return str(self.key)

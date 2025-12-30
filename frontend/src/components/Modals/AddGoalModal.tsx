@@ -22,7 +22,7 @@ export function AddGoalModal({ children, onSuccess }: AddGoalModalProps) {
         e.preventDefault();
         setLoading(true);
         try {
-            await api.post("/ledger/goals/", {
+            await api.post("/api/ledger/goals/", {
                 name,
                 target_amount: parseFloat(targetAmount),
             });

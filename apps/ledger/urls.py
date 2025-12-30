@@ -1,25 +1,21 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    TransactionCreateView, 
-    TrialBalanceView, 
-    AccountStatementView, 
-    TransactionListView, 
-    LedgerAccountListView,
-    FinancialGoalViewSet,
-    ContactViewSet,
-    SpendingAnalyticsView
+    LedgerAccountViewSet, TransactionViewSet, 
+    CardViewSet, SubscriptionViewSet, 
+    FinancialGoalViewSet, ContactViewSet,
+    dashboard_stats  # <-- Import this
 )
 
 router = DefaultRouter()
-router.register(r'goals', FinancialGoalViewSet, basename='financial-goal')
+router.register(r'accounts', LedgerAccountViewSet, basename='account')
+router.register(r'transactions', TransactionViewSet, basename='transaction')
+router.register(r'cards', CardViewSet, basename='card')
+router.register(r'subscriptions', SubscriptionViewSet, basename='subscription')
+router.register(r'goals', FinancialGoalViewSet, basename='goal')
 router.register(r'contacts', ContactViewSet, basename='contact')
 
 urlpatterns = [
-    path('transactions/create/', TransactionCreateView.as_view(), name='create-transaction'),
-    path('transactions/', TransactionListView.as_view(), name='transaction-list'),
-    path('trial-balance/', TrialBalanceView.as_view(), name='trial-balance'),
-    path('accounts/<uuid:pk>/statement/', AccountStatementView.as_view(), name='account-statement'),
-    path('accounts/', LedgerAccountListView.as_view(), name='account-list'),
-    path('analytics/spending/', SpendingAnalyticsView.as_view(), name='spending-analytics'),
-] + router.urls
+    path('', include(router.urls)),
+    path('dashboard/data/', dashboard_stats, name='dashboard-stats'), # <-- Add this line
+]

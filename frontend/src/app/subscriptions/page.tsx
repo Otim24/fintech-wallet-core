@@ -2,17 +2,38 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, AlertCircle, Music, Tv, Cloud, Command, CheckCircle2, Plus } from "lucide-react";
+import { AlertCircle, Tv, CheckCircle2, Plus, Trash2 } from "lucide-react";
+import { useLedgerData } from "@/hooks/useLedgerData";
+import { AddSubscriptionModal } from '@/components/Modals/AddSubscriptionModal';
+import api from '@/lib/api';
+import { toast } from 'sonner';
 
 export default function SubscriptionsPage() {
-    const subscriptions = [
-        { id: 1, name: 'Netflix Premium', cost: 15.99, date: '24th', icon: Tv, color: 'bg-red-500', status: 'Active' },
-        { id: 2, name: 'Spotify Duo', cost: 12.99, date: '28th', icon: Music, color: 'bg-green-500', status: 'Active' },
-        { id: 3, name: 'Adobe Creative Cloud', cost: 54.99, date: '1st', icon: Cloud, color: 'bg-blue-600', status: 'Active' },
-        { id: 4, name: 'Vercel Pro', cost: 20.00, date: '15th', icon: Command, color: 'bg-black border border-white/20', status: 'Active' },
-    ];
+    const { subscriptions, loading, refreshData } = useLedgerData();
 
-    const totalCost = subscriptions.reduce((acc, sub) => acc + sub.cost, 0);
+    const totalCost = subscriptions.reduce((acc, sub) => acc + Number(sub.amount), 0);
+
+    const handleDelete = async (id: string) => {
+        // Simple confirmation
+        if (!confirm("Are you sure you want to cancel this subscription?")) return;
+
+        try {
+            await api.delete(`/api/ledger/subscriptions/${id}/`);
+            toast.success("Subscription cancelled successfully");
+            refreshData();
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to cancel subscription");
+        }
+    };
+
+    if (loading && subscriptions.length === 0) {
+        return (
+            <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+                <div className="text-white animate-pulse">Loading Subscriptions...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen space-y-8">
@@ -30,35 +51,45 @@ export default function SubscriptionsPage() {
             <div className="grid grid-cols-12 gap-8">
                 {/* Main List */}
                 <div className="col-span-12 lg:col-span-8 space-y-4">
-                    {subscriptions.map((sub) => (
+                    {subscriptions.length > 0 ? subscriptions.map((sub) => (
                         <Card key={sub.id} className="p-6 rounded-[30px] border border-white/5 bg-zinc-900/40 backdrop-blur-xl flex items-center justify-between group hover:bg-white/5 transition-colors">
                             <div className="flex items-center gap-6">
-                                <div className={`h-16 w-16 rounded-2xl flex items-center justify-center text-white shadow-lg ${sub.color}`}>
-                                    <sub.icon size={28} />
+                                <div className={`h-16 w-16 rounded-2xl flex items-center justify-center text-white shadow-lg overflow-hidden bg-zinc-800`}>
+                                    {sub.logo_url ? (
+                                        <img src={sub.logo_url} alt={sub.service_name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <Tv size={28} />
+                                    )}
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-white mb-1 group-hover:text-zinc-200 transition-colors">{sub.name}</h3>
+                                    <h3 className="text-lg font-bold text-white mb-1 group-hover:text-zinc-200 transition-colors">{sub.service_name}</h3>
                                     <div className="flex items-center gap-2 text-xs font-bold text-zinc-500">
-                                        <span className="bg-white/10 px-2 py-0.5 rounded text-zinc-300">Monthly</span>
+                                        <span className="bg-white/10 px-2 py-0.5 rounded text-zinc-300">{sub.billing_cycle}</span>
                                         <span>•</span>
-                                        <span>Next billing: {sub.date}</span>
+                                        <span>Next billing: {new Date(sub.next_billing_date).toLocaleDateString()}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-8">
                                 <div className="text-right">
-                                    <div className="text-xl font-bold text-white">${sub.cost}</div>
+                                    <div className="text-xl font-bold text-white">${sub.amount}</div>
                                     <div className="text-xs text-green-500 flex items-center justify-end gap-1">
-                                        <CheckCircle2 size={10} /> {sub.status}
+                                        <CheckCircle2 size={10} /> {sub.is_active ? 'Active' : 'Inactive'}
                                     </div>
                                 </div>
-                                <Button variant="outline" className="border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 hover:bg-zinc-800 rounded-full">
-                                    Manage
+                                <Button
+                                    onClick={() => handleDelete(sub.id)}
+                                    variant="outline"
+                                    className="border-zinc-700 text-zinc-400 hover:text-red-400 hover:border-red-500/50 hover:bg-red-500/10 rounded-full"
+                                >
+                                    <Trash2 size={16} className="mr-2" /> Cancel
                                 </Button>
                             </div>
                         </Card>
-                    ))}
+                    )) : (
+                        <div className="text-zinc-500 text-center py-10">No subscriptions found</div>
+                    )}
                 </div>
 
                 {/* Insights / Alert Panel */}
@@ -76,13 +107,15 @@ export default function SubscriptionsPage() {
                         </Button>
                     </Card>
 
-                    <Card className="p-6 rounded-[30px] border border-dashed border-zinc-800 bg-transparent flex flex-col items-center justify-center text-center py-12 cursor-pointer hover:bg-white/5 transition-colors hover:border-zinc-600">
-                        <div className="h-12 w-12 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 mb-4">
-                            <Plus size={24} />
-                        </div>
-                        <h4 className="font-bold text-zinc-300">Add Subscription</h4>
-                        <p className="text-xs text-zinc-500 mt-1">Track external payments</p>
-                    </Card>
+                    <AddSubscriptionModal onSuccess={refreshData}>
+                        <Card className="p-6 rounded-[30px] border border-dashed border-zinc-800 bg-transparent flex flex-col items-center justify-center text-center py-12 cursor-pointer hover:bg-white/5 transition-colors hover:border-zinc-600">
+                            <div className="h-12 w-12 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 mb-4">
+                                <Plus size={24} />
+                            </div>
+                            <h4 className="font-bold text-zinc-300">Add Subscription</h4>
+                            <p className="text-xs text-zinc-500 mt-1">Track external payments</p>
+                        </Card>
+                    </AddSubscriptionModal>
                 </div>
             </div>
         </div>
